@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SICFOR - Sistema Integral de Gestión</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <h1>SICFOR</h1>
+            <p>Sistema Integral de Gestión para un Centro de Formación y Cursos</p>
+            <div id="db-test-container"
+                style="margin-top: 1rem; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 8px;">
+                <h3>Prueba de Base de Datos</h3>
+                <button onclick="testDBConnection()"
+                    style="background: white; color: var(--primary-color); border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-top: 0.5rem;">Cargar
+                    Datos de DB</button>
+                <div id="db-results" style="margin-top: 1rem; text-align: left;"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="modules-grid">
+            <!-- Grupo A -->
+            <div class="module-card">
+                <div class="module-icon">A</div>
+                <h2>Gestión de Usuarios</h2>
+                <p>Administradores, Roles, Login, Perfil.</p>
+                <button onclick="alert('Módulo A: En desarrollo')">Acceder</button>
+            </div>
+
+            <!-- Grupo B -->
+            <div class="module-card">
+                <div class="module-icon">B</div>
+                <h2>Estudiantes</h2>
+                <p>Registro, Datos, Fotos, Perfil.</p>
+                <button onclick="alert('Módulo B: En desarrollo')">Acceder</button>
+            </div>
+
+            <!-- Grupo C -->
+            <div class="module-card">
+                <div class="module-icon">C</div>
+                <h2>Instructores</h2>
+                <p>Registro, Datos profesionales, Listado.</p>
+                <button onclick="alert('Módulo C: En desarrollo')">Acceder</button>
+            </div>
+
+            <!-- Grupo D -->
+            <div class="module-card">
+                <div class="module-icon">D</div>
+                <h2>Catálogo de Cursos</h2>
+                <p>CRUD de Cursos, Requisitos, Modalidad.</p>
+                <button onclick="alert('Módulo D: En desarrollo')">Acceder</button>
+            </div>
+
+            <!-- Grupo E -->
+            <div class="module-card">
+                <div class="module-icon">E</div>
+                <h2>Recursos Académicos</h2>
+                <p>Material PDF, Guías, Videos.</p>
+                <button onclick="alert('Módulo E: En desarrollo')">Acceder</button>
+            </div>
+
+            <!-- Grupo F -->
+            <div class="module-card">
+                <div class="module-icon">F</div>
+                <h2>Pagos y Estados</h2>
+                <p>Registrar pagos, Historial, Recibos.</p>
+                <button onclick="alert('Módulo F: En desarrollo')">Acceder</button>
+            </div>
+
+            <!-- Grupo G -->
+            <div class="module-card">
+                <div class="module-icon">G</div>
+                <h2>Asistencia</h2>
+                <p>Registrar y consultar asistencia.</p>
+                <button onclick="alert('Módulo G: En desarrollo')">Acceder</button>
+            </div>
+
+            <!-- Grupo H -->
+            <div class="module-card">
+                <div class="module-icon">H</div>
+                <h2>Evaluaciones</h2>
+                <p>Notas, Retroalimentación, Reportes.</p>
+                <button onclick="alert('Módulo H: En desarrollo')">Acceder</button>
+            </div>
+
+            <!-- Grupo I -->
+            <div class="module-card">
+                <div class="module-icon">I</div>
+                <h2>Certificaciones</h2>
+                <p>Generar certificados, Verificación.</p>
+                <button onclick="alert('Módulo I: En desarrollo')">Acceder</button>
+            </div>
+
+            <!-- Grupo J -->
+            <div class="module-card">
+                <div class="module-icon">J</div>
+                <h2>Mesa de Ayuda</h2>
+                <p>Tickets de soporte, Estado, Prioridad.</p>
+                <button onclick="alert('Módulo J: En desarrollo')">Acceder</button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 SICFOR - Proyecto Universitario</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>
