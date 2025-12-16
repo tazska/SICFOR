@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SICFOR - Recuperar Contraseña</title>
+  <link rel="stylesheet" href="/styles/style_recuperar.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="logo-circle">S</div>
+      <h1>Recuperar Contraseña</h1>
+      <p id="instructionText">Ingresa tu correo electrónico para enviarte un código de recuperación.</p>
+
+      <!-- Indicador de pasos -->
+      <div class="step-indicator">
+        <div class="step active" id="step1"></div>
+        <div class="step" id="step2"></div>
+        <div class="step" id="step3"></div>
+      </div>
+
+      <!-- Mensajes de alerta -->
+      <div id="alertBox" class="alert"></div>
+
+      <!-- Paso 1: Ingresar correo -->
+      <form id="recoverForm">
+        <div class="input-group">
+          <i class="material-icons">email</i>
+          <input type="email" id="recoverEmail" placeholder="Tu Correo Gmail" required>
+        </div>
+        <button type="submit" class="btn primary" id="btnEnviarCodigo">
+          ENVIAR CÓDIGO
+        </button>
+        <a href="index.html" class="forgot-password">Volver al inicio de sesión</a>
+      </form>
+
+      <!-- Paso 2: Ingresar código -->
+      <form id="codeForm" style="display:none;">
+        <div class="input-group">
+          <i class="material-icons">vpn_key</i>
+          <input type="text" id="recoverCode" placeholder="Código de 6 dígitos" maxlength="6" required>
+        </div>
+        <button type="submit" class="btn primary" id="btnValidarCodigo">
+          VALIDAR CÓDIGO
+        </button>
+        <a href="#" class="forgot-password" id="reenviarCodigo">Reenviar código</a>
+      </form>
+
+      <!-- Paso 3: Cambiar contraseña -->
+      <form id="resetForm" style="display:none;">
+        <div class="input-group">
+          <i class="material-icons">lock</i>
+          <input type="password" id="newPassword" placeholder="Nueva contraseña (mínimo 6 caracteres)" minlength="6"
+            required>
+        </div>
+        <div class="input-group">
+          <i class="material-icons">lock</i>
+          <input type="password" id="confirmPassword" placeholder="Confirmar contraseña" minlength="6" required>
+        </div>
+        <button type="submit" class="btn primary" id="btnCambiarPassword">
+          CAMBIAR CONTRASEÑA
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let emailGlobal = '';
+
+    // Función para mostrar alertas
+    function showAlert(message, type) {
+      const alertBox = document.getElementById('alertBox');
+      alertBox.textContent = message;
+      alertBox.className = `alert ${type} show`;
+      setTimeout(() => {
+        alertBox.classList.remove('show');
+      }, 5000);
+    }
+
+    // Función para mostrar/ocultar loading
+    function setLoading(button, isLoading) {
+      if (isLoading) {
+        button.disabled = true;
+        button.innerHTML += '<span class="loading"></span>';
+      } else {
+        button.disabled = false;
+        const loading = button.querySelector('.loading');
+        if (loading) loading.remove();
+      }
+    }
+
+    // Actualizar indicadores de paso
+    function updateSteps(currentStep) {
+      document.querySelectorAll('.step').forEach((step, index) => {
+        if (index < currentStep) {
+          step.classList.add('active');
+        } else {
+          step.classList.remove('active');
+        }
+      });
+    }
+
+    // Paso 1: Enviar correo
+    document.getElementById('recoverForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const email = document.getElementById('recoverEmail').value.trim();
+      const btn = document.getElementById('btnEnviarCodigo');
+
+      if (!email) {
+        showAlert('Por favor ingresa un correo válido', 'error');
+        return;
+      }
+
+      setLoading(btn, true);
+
+      try {
+        const res = await fetch('/api/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showAlert('✅ Código enviado a tu correo. Revisa tu bandeja de entrada.', 'success');
+          emailGlobal = email;
+          updateSteps(2);
+          document.getElementById('instructionText').textContent = 'Ingresa el código de 6 dígitos enviado a tu correo.';
+          document.getElementById('recoverForm').style.display = 'none';
+          document.getElementById('codeForm').style.display = 'block';
+        } else {
+          showAlert('❌ ' + (data.error || 'No se pudo enviar el código'), 'error');
+        }
+      } catch (err) {
+        showAlert('❌ Error de conexión con el servidor', 'error');
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+
+    // Reenviar código
+    document.getElementById('reenviarCodigo').addEventListener('click', async e => {
+      e.preventDefault();
+      const btn = e.target;
+      btn.textContent = 'Reenviando...';
+
+      try {
+        const res = await fetch('/api/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailGlobal })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showAlert('✅ Código reenviado correctamente', 'success');
+        } else {
+          showAlert('❌ Error al reenviar código', 'error');
+        }
+      } catch (err) {
+        showAlert('❌ Error de conexión', 'error');
+      } finally {
+        btn.textContent = 'Reenviar código';
+      }
+    });
+
+    // Paso 2: Validar código
+    document.getElementById('codeForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const codigo = document.getElementById('recoverCode').value.trim();
+      const btn = document.getElementById('btnValidarCodigo');
+
+      if (!codigo || codigo.length !== 6) {
+        showAlert('❌ Ingresa un código de 6 dígitos', 'error');
+        return;
+      }
+
+      setLoading(btn, true);
+
+      try {
+        const res = await fetch('/api/verify-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailGlobal, codigo })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showAlert('✅ Código válido. Ahora crea tu nueva contraseña.', 'success');
+          updateSteps(3);
+          document.getElementById('instructionText').textContent = 'Crea tu nueva contraseña segura.';
+          document.getElementById('codeForm').style.display = 'none';
+          document.getElementById('resetForm').style.display = 'block';
+        } else {
+          showAlert('❌ ' + (data.error || 'Código inválido o expirado'), 'error');
+        }
+      } catch (err) {
+        showAlert('❌ Error de conexión con el servidor', 'error');
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+
+    // Paso 3: Cambiar contraseña
+    document.getElementById('resetForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const nueva = document.getElementById('newPassword').value.trim();
+      const confirmar = document.getElementById('confirmPassword').value.trim();
+      const btn = document.getElementById('btnCambiarPassword');
+
+      if (nueva.length < 6) {
+        showAlert('❌ La contraseña debe tener al menos 6 caracteres', 'error');
+        return;
+      }
+
+      if (nueva !== confirmar) {
+        showAlert('❌ Las contraseñas no coinciden', 'error');
+        return;
+      }
+
+      setLoading(btn, true);
+
+      try {
+        const res = await fetch('/api/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: emailGlobal,
+            codigo: document.getElementById('recoverCode').value.trim(),
+            nuevaPassword: nueva
+          })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showAlert('✅ Contraseña actualizada correctamente. Redirigiendo...', 'success');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 2000);
+        } else {
+          showAlert('❌ ' + (data.error || 'No se pudo actualizar la contraseña'), 'error');
+        }
+      } catch (err) {
+        showAlert('❌ Error de conexión con el servidor', 'error');
+      } finally {
+        setLoading(btn, false);
+      }
+    });
+
+    // Auto-focus en el siguiente campo
+    document.getElementById('recoverCode').addEventListener('input', e => {
+      if (e.target.value.length === 6) {
+        document.getElementById('btnValidarCodigo').focus();
+      }
+    });
+  </script>
+</body>
+
+</html>

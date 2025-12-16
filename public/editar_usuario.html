@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SICFOR - Editar Usuario</title>
+  <link rel="stylesheet" href="/styles/style_editar_usuario.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-left">
+      <i class="material-icons menu-toggle">menu</i>
+      <span class="logo">SICFOR</span>
+    </div>
+    <div class="header-right">
+      <i class="material-icons notification-icon">notifications</i>
+      <span class="notification-badge" id="notification-count">0</span>
+      <div class="profile-icon" onclick="document.getElementById('profile-dropdown').classList.toggle('show')">
+        <i class="material-icons">account_circle</i>
+      </div>
+      <span class="profile-name" id="profile-name">Cargando...</span>
+      <div id="profile-dropdown" class="dropdown-content">
+        <a href="#" onclick="logout()">Logout</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <aside class="sidebar">
+      <nav>
+        <a href="dashboard.html"><i class="material-icons">dashboard</i> Panel de Control</a>
+        <a href="gestion_usuarios.html" style="background-color: #f0f0f0; font-weight: bold;">
+          <i class="material-icons">people</i> Gestión Usuarios
+        </a>
+        <a href="gestion_roles.html"><i class="material-icons">lock</i> Gestión Roles</a>
+        <a href="perfil.html"><i class="material-icons">person</i> Mi Perfil</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <div class="card">
+        <h2><i class="material-icons" style="font-size: 30px;">edit</i> Editar Usuario</h2>
+
+        <div id="loading-message" style="text-align: center; padding: 20px; color: #666;">
+          Cargando datos del usuario...
+        </div>
+
+        <form id="editUserForm" style="display: none;">
+          <div class="form-grid">
+            <!-- ID autoincremental -->
+            <div class="form-group">
+              <label for="id">ID:</label>
+              <input type="text" id="id" disabled style="background-color: #f5f5f5;">
+            </div>
+
+            <div class="form-group">
+              <label for="fullName">Nombre:</label>
+              <input type="text" id="fullName" required>
+            </div>
+
+            <div class="form-group">
+              <label for="documentID">Documento de Identidad:</label>
+              <input type="text" id="documentID" required>
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input type="email" id="email" required>
+            </div>
+
+            <div class="form-group">
+              <label for="phone">Teléfono:</label>
+              <input type="tel" id="phone">
+            </div>
+
+            <div class="form-group">
+              <label for="departamento">Departamento:</label>
+              <input type="text" id="departamento">
+            </div>
+
+            <div class="form-group">
+              <label for="ubicacion">Ubicación:</label>
+              <input type="text" id="ubicacion">
+            </div>
+
+            <div class="form-group">
+              <label for="status">Estado:</label>
+              <select id="status">
+                <option value="active">Activo</option>
+                <option value="inactive">Inactivo</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Rol:</label>
+              <div class="role-selection-group">
+                <label><input type="radio" name="role" value="admin"> Administrador</label>
+                <label><input type="radio" name="role" value="instructor"> Instructor</label>
+                <label><input type="radio" name="role" value="student"> Estudiante</label>
+              </div>
+            </div>
+          </div>
+
+          <div style="text-align: right; margin-top: 20px;">
+            <button type="submit" class="btn primary"><i class="material-icons">save</i> Guardar Cambios</button>
+            <a href="gestion_usuarios.html" class="btn secondary" style="margin-left: 10px;">Cancelar</a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+ <script>
+document.addEventListener('DOMContentLoaded', async () => {
+  console.log('🚀 Iniciando edición de usuario...');
+
+  const usuario = JSON.parse(localStorage.getItem('usuario'));
+  if (usuario) {
+    document.getElementById('profile-name').textContent = usuario.nombre;
+  }
+
+  // Obtener id desde la URL
+  const params = new URLSearchParams(window.location.search);
+  const userId = params.get('id');
+
+  console.log('📋 ID desde URL:', userId);
+
+  if (!userId) {
+    alert('❌ No se especificó usuario');
+    window.location.href = 'gestion_usuarios.html';
+    return;
+  }
+
+  // Cargar datos del usuario
+  try {
+    console.log(`📡 Cargando datos de usuario con id: ${userId}`);
+    const res = await fetch(`/api/usuarios/${userId}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    console.log('📦 Respuesta del servidor:', data);
+
+    if (data.success && data.usuario) {
+      const u = data.usuario;
+      console.log('✅ Usuario cargado:', u);
+
+      // Mostrar el formulario y ocultar el mensaje de carga
+      document.getElementById('loading-message').style.display = 'none';
+      document.getElementById('editUserForm').style.display = 'block';
+
+      // Llenar los campos del formulario
+      document.getElementById('id').value = u.id || '';
+      document.getElementById('fullName').value = u.nombre || '';
+      document.getElementById('documentID').value = u.documento_identidad || '';
+      document.getElementById('email').value = u.email || '';
+      document.getElementById('phone').value = u.telefono || '';
+      document.getElementById('departamento').value = u.departamento || '';
+      document.getElementById('ubicacion').value = u.ubicacion || '';
+      document.getElementById('status').value = u.estado || 'active';
+
+      // Marcar el rol correcto
+      const rolInput = document.querySelector(`input[name="role"][value="${u.rol}"]`);
+      if (rolInput) rolInput.checked = true;
+    } else {
+      alert('❌ Error: ' + (data.error || 'Usuario no encontrado'));
+      window.location.href = 'gestion_usuarios.html';
+    }
+  } catch (err) {
+    console.error('❌ Error al cargar usuario:', err);
+    alert('❌ Error al cargar los datos del usuario');
+    window.location.href = 'gestion_usuarios.html';
+  }
+
+  // Guardar cambios
+  document.getElementById('editUserForm').addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const selectedRole = document.querySelector('input[name="role"]:checked');
+    if (!selectedRole) {
+      alert('❌ Por favor selecciona un rol');
+      return;
+    }
+
+    const updatedUser = {
+      nombre: document.getElementById('fullName').value.trim(),
+      documento_identidad: document.getElementById('documentID').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      telefono: document.getElementById('phone').value.trim(),
+      departamento: document.getElementById('departamento').value.trim(),
+      ubicacion: document.getElementById('ubicacion').value.trim(),
+      estado: document.getElementById('status').value,
+      rol: selectedRole.value
+    };
+
+    console.log('💾 Guardando cambios para usuario con id:', userId);
+    console.log('📦 Datos a actualizar:', updatedUser);
+
+    try {
+      const res = await fetch(`/api/usuarios/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedUser)
+      });
+      const result = await res.json();
+      console.log('📨 Respuesta del servidor:', result);
+
+      if (result.success) {
+        alert('✅ Usuario actualizado correctamente');
+        window.location.href = 'gestion_usuarios.html';
+      } else {
+        alert('❌ Error: ' + (result.error || 'No se pudo actualizar'));
+      }
+    } catch (err) {
+      console.error('❌ Error al actualizar usuario:', err);
+      alert('❌ Error al guardar los cambios');
+    }
+  });
+});
+
+function logout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('usuario');
+  window.location.href = 'login.html';
+}
+</script>
+</body>
+
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SICFOR - Panel de Control</title>
+    <link rel="stylesheet" href="/styles/style_dash.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-left">
+            <i class="material-icons menu-toggle">menu</i>
+            <span class="logo">SICFOR</span>
+        </div>
+        <div class="header-right">
+            <div class="notification-icon">
+                <i class="material-icons">notifications</i>
+                <span class="notification-badge">1</span>
+            </div>
+            <div class="profile-area" onclick="document.getElementById('profile-dropdown').classList.toggle('show')">
+                <span class="profile-name" id="profile-name">...</span>
+                <i class="material-icons profile-icon">account_circle</i>
+            </div>
+            <div id="profile-dropdown" class="dropdown-content">
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <div class="menu-title">MENÚ PRINCIPAL</div>
+            <nav>
+                <a href="dashboard.html" class="active"><i class="material-icons">dashboard</i> Panel de Control</a>
+                <a href="gestion_usuarios.html"><i class="material-icons">people</i> Gestión Usuarios</a>
+                <a href="gestion_roles.html"><i class="material-icons">lock</i> Gestión Roles</a>
+                <a href="perfil.html"><i class="material-icons">person</i> Mi Perfil</a>
+            </nav>
+
+            <div class="menu-title">MÓDULOS SICFOR</div>
+            <nav>
+                <a href="#" class="module-link"><i class="material-icons">book</i> Catálogo de Cursos (D)</a>
+                <a href="#" class="module-link"><i class="material-icons">person_add</i> Registro Estudiantes (B)</a>
+                <a href="#" class="module-link"><i class="material-icons">credit_card</i> Módulo de Pagos (E)</a>
+                <a href="#" class="module-link"><i class="material-icons">help_outline</i> Mesa de Ayuda (J)</a>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <h2 style="font-size: 28px; font-weight: 300; margin-bottom: 5px;">Panel de Control</h2>
+            <p style="color: var(--color-text-muted); margin-bottom: 30px;">Gestión de Usuarios del Sistema</p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon icon-purple"><i class="material-icons">group</i></div>
+                    <div class="stat-info">
+                        <div class="value" id="stat-usuarios">...</div>
+                        <div class="label">Total Usuarios</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-green"><i class="material-icons">school</i></div>
+                    <div class="stat-info">
+                        <div class="value" id="stat-instructores">...</div>
+                        <div class="label">Instructores</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue"><i class="material-icons">person_pin</i></div>
+                    <div class="stat-info">
+                        <div class="value" id="stat-estudiantes">...</div>
+                        <div class="label">Estudiantes</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-dark"><i class="material-icons">verified_user</i></div>
+                    <div class="stat-info">
+                        <div class="value" id="stat-admins">...</div>
+                        <div class="label">Administradores</div>
+                    </div>
+                </div>
+                <div class="stat-card"
+                    style="grid-column: span 1; background-color: #fff3cd; border: 1px solid #ffeeba;">
+                    <div class="stat-icon icon-warning"><i class="material-icons">warning</i></div>
+                    <div class="stat-info">
+                        <div class="value" id="stat-inactivos" style="color: #856404;">...</div>
+                        <div class="label">Usuarios Inactivos</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="padding: 15px; border-left: 5px solid var(--color-primary);">
+                <h3 style="margin-bottom: 10px; color: var(--color-primary); font-size: 18px;">
+                    <i class="material-icons">flash_on</i> Acciones Rápidas
+                </h3>
+                <div style="display: flex; gap: 10px;">
+                    <a href="agregar_usuario.html" class="btn primary">
+                        <i class="material-icons">add</i> Nuevo Usuario
+                    </a>
+                    <a href="gestion_usuarios.html" class="btn secondary">
+                        <i class="material-icons">list</i> Ver Todos
+                    </a>
+                    <a href="gestion_roles.html" class="btn secondary">
+                        <i class="material-icons">settings</i> Gestionar Roles
+                    </a>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 20px;">
+                <h3 style="margin-bottom: 15px; color: #344767; font-size: 18px;">
+                    <i class="material-icons">history</i> Actividad Reciente
+                </h3>
+                <ul class="activity-list" id="activity-list" style="list-style: none; padding: 0; margin: 0;">
+                    <li style="color: #999; font-style: italic; padding: 15px; text-align: center;">
+                        Cargando actividades...
+                    </li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Iniciando carga del dashboard...');
+
+            const token = localStorage.getItem('token');
+            const usuario = JSON.parse(localStorage.getItem('usuario'));
+
+            if (!token || !usuario) {
+                console.log('❌ No hay token o usuario, redirigiendo a login');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Mostrar nombre del usuario (columna "nombre")
+            document.getElementById('profile-name').textContent = usuario.nombre;
+            console.log('✅ Usuario logueado:', usuario.nombre);
+
+            try {
+                console.log('📡 Haciendo petición a /api/dashboard/data...');
+                const res = await fetch('/api/dashboard/data');
+                const data = await res.json();
+
+                console.log('📦 Respuesta completa del servidor:', data);
+
+                if (data.success) {
+                    const stats = data.stats;
+
+                    // Actualizar estadísticas
+                    console.log('📊 Actualizando estadísticas...');
+                    document.getElementById('stat-usuarios').textContent = stats.usuarios || 0;
+                    document.getElementById('stat-instructores').textContent = stats.instructores || 0;
+                    document.getElementById('stat-estudiantes').textContent = stats.estudiantes || 0;
+                    document.getElementById('stat-admins').textContent = stats.administradores || 0;
+                    document.getElementById('stat-inactivos').textContent = stats.inactivos || 0;
+                    console.log('✅ Estadísticas actualizadas:', stats);
+
+                    const actividadList = document.getElementById('activity-list');
+                    actividadList.innerHTML = '';
+
+                    // Verificar si hay actividades
+                    if (data.actividad && Array.isArray(data.actividad) && data.actividad.length > 0) {
+                        console.log(`✅ ${data.actividad.length} actividades encontradas, renderizando...`);
+
+                        data.actividad.forEach((item, index) => {
+                            console.log(`📝 Procesando actividad ${index + 1}:`, item);
+
+                            const li = document.createElement('li');
+                            li.style.cssText = 'font-size: 14px; margin-bottom: 12px; border-left: 3px solid #28a745; padding: 8px 0 8px 12px; background-color: #f8f9fa; border-radius: 4px;';
+
+                            // Determinar color según el tipo de actividad
+                            let colorTipo = '#28a745';
+                            let iconoTipo = 'check_circle';
+
+                            switch (item.tipo) {
+                                case 'login':
+                                    colorTipo = '#17a2b8';
+                                    iconoTipo = 'login';
+                                    break;
+                                case 'create':
+                                    colorTipo = '#28a745';
+                                    iconoTipo = 'add_circle';
+                                    break;
+                                case 'update':
+                                    colorTipo = '#ffc107';
+                                    iconoTipo = 'edit';
+                                    break;
+                                case 'delete':
+                                    colorTipo = '#dc3545';
+                                    iconoTipo = 'delete';
+                                    break;
+                                case 'access':
+                                    colorTipo = '#6c757d';
+                                    iconoTipo = 'visibility';
+                                    break;
+                            }
+
+                            li.style.borderLeftColor = colorTipo;
+
+                            li.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: ${colorTipo}; font-weight: bold; font-size: 12px;">[${item.hora || 'N/A'}]</span>
+                            <span style="font-weight: bold; color: #344767;">Usuario #${item.usuario_id || 'N/A'}</span>
+                            <span style="color: #555;">${item.descripcion || 'Sin descripción'}</span>
+                            ${item.modulo ? `<span style="color: #6c757d; font-size: 12px; margin-left: auto; background: #e9ecef; padding: 2px 8px; border-radius: 12px;">${item.modulo}</span>` : ''}
+                        </div>
+                    `;
+                            actividadList.appendChild(li);
+                        });
+
+                        console.log('✅ Todas las actividades renderizadas correctamente');
+                    } else {
+                        console.log('⚠️ No hay actividades para mostrar');
+                        actividadList.innerHTML = '<li style="color: #999; font-style: italic; padding: 15px; text-align: center;">No hay actividad reciente registrada</li>';
+                    }
+                } else {
+                    console.error('❌ El servidor respondió con success: false');
+                    document.getElementById('activity-list').innerHTML = '<li style="color: #dc3545; padding: 15px; text-align: center;">Error: El servidor respondió con un error</li>';
+                }
+            } catch (err) {
+                console.error('❌ Error al cargar dashboard:', err);
+                document.getElementById('activity-list').innerHTML = '<li style="color: #dc3545; padding: 15px; text-align: center;">Error al cargar la actividad reciente</li>';
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('usuario');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+
+</html>

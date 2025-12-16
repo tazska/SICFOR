@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SICFOR - Mi Perfil</title>
+  <link rel="stylesheet" href="/styles/style_perfil.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-left">
+      <i class="material-icons menu-toggle">menu</i>
+      <span class="logo">SICFOR</span>
+    </div>
+    <div class="header-right">
+      <i class="material-icons notification-icon">notifications</i>
+      <span class="notification-badge" id="notification-count">0</span>
+      <div class="profile-icon" onclick="document.getElementById('profile-dropdown').classList.toggle('show')">
+        <i class="material-icons">account_circle</i>
+      </div>
+      <span class="profile-name" id="profile-name">Cargando...</span>
+      <div id="profile-dropdown" class="dropdown-content">
+        <a href="#" onclick="logout()">Logout</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <aside class="sidebar">
+      <nav>
+        <a href="dashboard.html"><i class="material-icons">dashboard</i> Panel de Control</a>
+        <a href="gestion_usuarios.html"><i class="material-icons">people</i> Gestión Usuarios</a>
+        <a href="gestion_roles.html"><i class="material-icons">lock</i> Gestión Roles</a>
+        <a href="perfil.html" style="background-color: #f0f0f0; font-weight: bold;">
+          <i class="material-icons">person</i> Mi Perfil
+        </a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <h2>Mi Perfil</h2>
+      <div class="card">
+        <div class="profile-header">
+          <div class="profile-avatar"><i class="material-icons">person</i></div>
+          <div class="profile-info">
+            <h3 id="perfil-nombre">Cargando...</h3>
+            <p class="status"><i class="material-icons">fiber_manual_record</i> En línea</p>
+            <p class="id-tag" id="perfil-id">ID: ...</p>
+          </div>
+          <button id="editProfileBtn" class="btn primary" style="margin-left: auto;">
+            <i class="material-icons">edit</i> Editar Perfil
+          </button>
+        </div>
+
+        <div class="section-title">Información Personal</div>
+        <div class="profile-details" id="perfil-detalles">
+          <div style="text-align: center; padding: 20px; color: #999;">
+            Cargando información...
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top: 30px;">Seguridad</div>
+        <button id="changePasswordBtn" class="btn secondary">
+          <i class="material-icons">vpn_key</i> Cambiar Contraseña
+        </button>
+        <button class="btn secondary" style="margin-left: 10px;">
+          <i class="material-icons">security</i> Verificación en Dos Pasos
+        </button>
+
+        <div class="section-title" style="margin-top: 30px;">Actividad Reciente</div>
+        <ul class="activity-list" id="perfil-actividad">
+          <li style="color: #999; font-style: italic;">Cargando actividad...</li>
+        </ul>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      console.log('🚀 Cargando perfil de usuario...');
+
+      // Verificar sesión
+      const usuarioSesion = JSON.parse(localStorage.getItem('usuario'));
+      if (!usuarioSesion) {
+        console.log('❌ No hay sesión activa, redirigiendo a login');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      console.log('✅ Usuario en sesión:', usuarioSesion);
+
+      // Mostrar nombre en el header
+      document.getElementById('profile-name').textContent = usuarioSesion.nombre;
+
+      // Configurar botón de editar perfil
+      document.getElementById('editProfileBtn').addEventListener('click', () => {
+        console.log('✏️ Redirigiendo a editar perfil:', usuarioSesion.id);
+        window.location.href = `editar_usuario.html?id=${usuarioSesion.id}`;
+      });
+
+      try {
+        // Cargar datos del perfil
+        console.log(`📡 Obteniendo perfil de ID: ${usuarioSesion.id}`);
+        const res = await fetch(`/api/perfil/${usuarioSesion.id}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        console.log('📦 Respuesta del servidor:', data);
+
+        if (data.success && data.usuario) {
+          const u = data.usuario;
+          console.log('✅ Datos del usuario cargados:', u);
+
+          // Actualizar nombre e ID
+          document.getElementById('perfil-nombre').textContent = u.nombre || 'N/A';
+          document.getElementById('perfil-id').textContent = `ID: ${u.id || 'N/A'}`;
+
+          // Actualizar detalles del perfil
+          document.getElementById('perfil-detalles').innerHTML = `
+        <div class="detail-item"><label>ID:</label><span>${u.id || 'N/A'}</span></div>
+        <div class="detail-item"><label>Rol asignado:</label><span class="tag role-${u.rol || 'unknown'}">${u.rol || 'N/A'}</span></div>
+        <div class="detail-item"><label>Documento:</label><span>${u.documento_identidad || 'N/A'}</span></div>
+        <div class="detail-item"><label>Estado de cuenta:</label><span class="tag ${u.estado === 'active' ? 'active' : 'inactive'}">${u.estado === 'active' ? 'Activo' : 'Inactivo'}</span></div>
+        <div class="detail-item"><label>Email:</label><a href="mailto:${u.email || ''}">${u.email || 'N/A'}</a></div>
+        <div class="detail-item"><label>Departamento:</label><span>${u.departamento || 'N/A'}</span></div>
+        <div class="detail-item"><label>Teléfono:</label><span>${u.telefono || 'N/A'}</span></div>
+        <div class="detail-item"><label>Ubicación:</label><span>${u.ubicacion || 'N/A'}</span></div>
+        <div class="detail-item"><label>Fecha de registro:</label><span>${u.fecha_registro ? new Date(u.fecha_registro).toLocaleDateString('es-ES') : 'N/A'}</span></div>
+      `;
+
+          console.log('✅ Información del perfil renderizada correctamente');
+        } else {
+          console.error('❌ Error al cargar perfil:', data.error);
+          document.getElementById('perfil-detalles').innerHTML =
+            '<div style="text-align:center; padding:20px; color:#d32f2f;">Error al cargar la información del perfil</div>';
+        }
+
+        // Cargar actividad reciente
+        console.log(`📡 Obteniendo actividad de ID: ${usuarioSesion.id}`);
+        const actividadRes = await fetch(`/api/actividad/${usuarioSesion.id}`);
+        if (!actividadRes.ok) throw new Error(`HTTP ${actividadRes.status}`);
+        const actividadData = await actividadRes.json();
+
+        console.log('📦 Actividad del usuario:', actividadData);
+
+        const lista = document.getElementById('perfil-actividad');
+        if (actividadData.success && actividadData.actividad && actividadData.actividad.length > 0) {
+          lista.innerHTML = '';
+          actividadData.actividad.forEach(act => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+          <i class="material-icons" style="color:#2ecc71; font-size:16px;">fiber_manual_record</i>
+          ${new Date(act.creado_en).toLocaleString('es-ES')} - ${act.descripcion || 'Sin descripción'}
+        `;
+            lista.appendChild(li);
+          });
+          console.log(`✅ ${actividadData.actividad.length} actividades renderizadas`);
+        } else {
+          lista.innerHTML = '<li style="color:#999; font-style:italic;">No hay actividad reciente</li>';
+          console.log('⚠️ No hay actividad reciente para mostrar');
+        }
+
+      } catch (err) {
+        console.error('❌ Error al cargar perfil:', err);
+        document.getElementById('perfil-detalles').innerHTML =
+          '<div style="text-align:center; padding:20px; color:#d32f2f;">Error de conexión con el servidor</div>';
+        document.getElementById('perfil-actividad').innerHTML =
+          '<li style="color:#d32f2f;">Error al cargar actividad</li>';
+      }
+    });
+
+    function logout() {
+      console.log('👋 Cerrando sesión...');
+      localStorage.removeItem('token');
+      localStorage.removeItem('usuario');
+      window.location.href = 'login.html';
+    }
+  </script>
+
+</body>
+
+</html>

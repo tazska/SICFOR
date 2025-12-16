@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SICFOR - Gestión de Roles</title>
+    <link rel="stylesheet" href="/styles/style_gestion_roles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-left">
+            <i class="material-icons menu-toggle">menu</i>
+            <span class="logo">SICFOR</span>
+        </div>
+        <div class="header-right">
+            <i class="material-icons notification-icon">notifications</i>
+            <span class="notification-badge" id="notification-count">0</span>
+            <div class="profile-icon" onclick="document.getElementById('profile-dropdown').classList.toggle('show')">
+                <i class="material-icons">account_circle</i>
+            </div>
+            <span class="profile-name" id="profile-name">Cargando...</span>
+            <div id="profile-dropdown" class="dropdown-content">
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <nav>
+                <a href="dashboard.html"><i class="material-icons">dashboard</i> Panel de Control</a>
+                <a href="gestion_usuarios.html"><i class="material-icons">people</i> Gestión Usuarios</a>
+                <a href="gestion_roles.html" style="background-color: #f0f0f0; font-weight: bold;">
+                    <i class="material-icons">lock</i> Gestión Roles
+                </a>
+                <a href="perfil.html"><i class="material-icons">person</i> Mi Perfil</a>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <div class="roles-header">
+                <h2><i class="material-icons" style="font-size: 30px;">settings</i> Gestión de Roles y Permisos</h2>
+                <button id="crearRolBtn" class="btn primary"><i class="material-icons">add</i> Crear Nuevo Rol</button>
+            </div>
+
+            <!-- Contenedor donde se renderizan los roles desde la BD -->
+            <div class="role-list" id="role-list">
+                <!-- Se llena dinámicamente; sin datos estáticos -->
+                <div class="card skeleton">
+                    <div class="role-header">
+                        <div class="skeleton-line" style="width: 200px; height: 20px;"></div>
+                        <div class="actions">
+                            <div class="skeleton-line" style="width: 120px; height: 16px;"></div>
+                            <i class="material-icons">edit</i>
+                            <i class="material-icons">delete</i>
+                        </div>
+                    </div>
+                    <div class="role-details">
+                        <div class="skeleton-line" style="width: 100%; height: 14px; margin-bottom: 8px;"></div>
+                        <div class="skeleton-line" style="width: 80%; height: 14px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Template HTML para clonar y renderizar roles dinámicamente -->
+            <template id="role-card-template">
+                <div class="card">
+                    <div class="role-header">
+                        <h4><i class="material-icons">lock</i> <span class="role-name"></span></h4>
+                        <div class="actions">
+                            <span class="user-count-tag role-user-count"></span>
+                            <i class="material-icons edit" title="Editar Permisos"></i>
+                            <i class="material-icons delete" title="Eliminar Rol"></i>
+                        </div>
+                    </div>
+                    <div class="role-details">
+                        <p class="role-description" style="font-size: 14px; color: #7f8c8d; margin-bottom: 15px;"></p>
+                        <div class="permissions">
+                            <div class="permissions-column permissions-left"></div>
+                            <div class="permissions-column permissions-right"></div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </main>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Cargar nombre de usuario
+            const usuario = JSON.parse(localStorage.getItem('usuario') || '{}');
+            const profileName = document.getElementById('profile-name');
+            if (profileName) {
+                profileName.textContent = usuario.nombre || 'Usuario';
+            }
+
+            // Verificar servidor y cargar roles
+            if (await verificarServidor()) {
+                cargarRoles();
+            } else {
+                mostrarErrorConexion();
+            }
+
+            // Evento del botón crear rol
+            document.querySelector('.btn.primary')?.addEventListener('click', () => {
+                const nombreRol = prompt('Ingrese el nombre del nuevo rol:');
+                if (!nombreRol?.trim()) return;
+
+                const descripcion = prompt('Ingrese una descripción (opcional):') || '';
+                crearRol(nombreRol.trim(), descripcion.trim());
+            });
+        });
+
+        async function verificarServidor() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/roles`);
+                return res.ok;
+            } catch (err) {
+                return false;
+            }
+        }
+
+        function mostrarErrorConexion() {
+            const roleList = document.getElementById('role-list');
+            if (!roleList) return;
+
+            roleList.innerHTML = `
+            <div style="text-align:center; padding:60px 20px; background:white; border-radius:8px;">
+                <i class="material-icons" style="font-size:64px; color:#e74c3c;">cloud_off</i>
+                <h3 style="color:#e74c3c; margin:20px 0 10px;">No se pudo conectar al servidor</h3>
+                <p style="color:#7f8c8d; margin-bottom:20px;">
+                    Verifica que el servidor esté corriendo en el puerto 8080:<br>
+                    <code style="background:#f8f9fa; padding:5px 10px; border-radius:4px; display:inline-block; margin-top:10px;">node server.js</code>
+                </p>
+                <button onclick="location.reload()" 
+                        style="padding:12px 24px; background:#3498db; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px;">
+                    🔄 Reintentar
+                </button>
+            </div>
+        `;
+        }
+
+        async function cargarRoles() {
+            const roleList = document.getElementById('role-list');
+            if (!roleList) return;
+
+            // Mostrar loading
+            roleList.innerHTML = `
+            <div style="text-align:center; padding:40px;">
+                <div style="display:inline-block; width:50px; height:50px; border:4px solid #f3f3f3; border-top:4px solid #3498db; border-radius:50%; animation:spin 1s linear infinite;"></div>
+                <p style="color:#999; margin-top:15px;">Cargando roles...</p>
+            </div>
+            <style>
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            </style>
+        `;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/roles`);
+
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                const data = await res.json();
+
+                if (data.success && Array.isArray(data.roles)) {
+                    if (data.roles.length === 0) {
+                        roleList.innerHTML = `
+                        <div style="text-align:center; padding:60px; background:white; border-radius:8px;">
+                            <i class="material-icons" style="font-size:64px; color:#bdc3c7;">folder_open</i>
+                            <p style="color:#7f8c8d; margin-top:15px;">No hay roles registrados en el sistema</p>
+                        </div>
+                    `;
+                    } else {
+                        renderizarRoles(data.roles);
+                    }
+                } else {
+                    throw new Error(data.error || 'Respuesta inválida');
+                }
+            } catch (err) {
+                roleList.innerHTML = `
+                <div style="text-align:center; padding:60px 20px; background:white; border-radius:8px;">
+                    <i class="material-icons" style="font-size:64px; color:#e74c3c;">error_outline</i>
+                    <h3 style="color:#e74c3c; margin:20px 0 10px;">Error al cargar roles</h3>
+                    <p style="color:#7f8c8d; margin-bottom:5px;">${err.message}</p>
+                    <button onclick="cargarRoles()" 
+                            style="margin-top:20px; padding:10px 20px; background:#3498db; color:white; border:none; border-radius:4px; cursor:pointer;">
+                        🔄 Reintentar
+                    </button>
+                </div>
+            `;
+            }
+        }
+
+        function renderizarRoles(roles) {
+            const roleList = document.getElementById('role-list');
+            if (!roleList) return;
+
+            roleList.innerHTML = '';
+            roles.forEach(rol => roleList.appendChild(crearTarjetaRol(rol)));
+        }
+
+        function crearTarjetaRol(rol) {
+            const card = document.createElement('div');
+            card.className = 'card';
+
+            const iconos = {
+                'admin': 'admin_panel_settings',
+                'instructor': 'person_search',
+                'student': 'face'
+            };
+
+            const icono = iconos[rol.nombre.toLowerCase()] || 'lock';
+            const nombreCapitalizado = rol.nombre.charAt(0).toUpperCase() + rol.nombre.slice(1);
+            const permisos = rol.permisos || [];
+            const permitidos = permisos.filter(p => p?.permitido);
+            const denegados = permisos.filter(p => p && !p.permitido);
+            const esSistema = rol.es_sistema || false;
+
+            // Dividir permitidos en dos columnas
+            const mitadPermitidos = Math.ceil(permitidos.length / 2);
+            const permitidosCol1 = permitidos.slice(0, mitadPermitidos);
+            const permitidosCol2 = permitidos.slice(mitadPermitidos);
+
+            // Dividir denegados en dos columnas
+            const mitadDenegados = Math.ceil(denegados.length / 2);
+            const denegadosCol1 = denegados.slice(0, mitadDenegados);
+            const denegadosCol2 = denegados.slice(mitadDenegados);
+
+            card.innerHTML = `
+        <div class="role-header role-header-${rol.nombre.toLowerCase()}">
+            <h4><i class="material-icons">${icono}</i> ${nombreCapitalizado}</h4>
+            <div class="actions">
+                <span class="user-count-tag">${rol.totalUsuarios || 0} usuario(s)</span>
+                <i class="material-icons edit" 
+                   style="${esSistema ? 'cursor: not-allowed; color: #bdc3c7;' : 'cursor: pointer;'}" 
+                   title="${esSistema ? 'Rol del sistema (no editable)' : 'Editar Permisos'}"
+                   ${esSistema ? '' : `onclick="editarRol(${rol.id})"`}>edit</i>
+                <i class="material-icons delete" 
+                   style="${esSistema ? 'cursor: not-allowed; color: #bdc3c7;' : 'cursor: pointer;'}" 
+                   title="${esSistema ? 'Rol del sistema (no eliminable)' : 'Eliminar Rol'}"
+                   ${esSistema ? '' : `onclick="eliminarRol(${rol.id}, '${rol.nombre.replace(/'/g, "\\'")}')"`}>delete</i>
+            </div>
+        </div>
+        <div class="role-details">
+            <p style="font-size: 14px; color: #7f8c8d; margin-bottom: 15px;">
+                ${rol.descripcion || 'Sin descripción'}
+            </p>
+            <div class="permissions">
+                <div class="permissions-column">
+                    ${permitidosCol1.map(p => `
+                        <div class="permission-item">
+                            <i class="material-icons check">check</i> ${p.permiso}
+                        </div>
+                    `).join('')}
+                    ${denegadosCol1.map(p => `
+                        <div class="permission-item" style="color: #e74c3c;">
+                            <i class="material-icons close">close</i> ${p.permiso}
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="permissions-column">
+                    ${permitidosCol2.map(p => `
+                        <div class="permission-item">
+                            <i class="material-icons check">check</i> ${p.permiso}
+                        </div>
+                    `).join('')}
+                    ${denegadosCol2.map(p => `
+                        <div class="permission-item" style="color: #e74c3c;">
+                            <i class="material-icons close">close</i> ${p.permiso}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+
+            return card;
+        }
+
+        async function crearRol(nombre, descripcion) {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/roles`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre, descripcion })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('✅ Rol creado correctamente');
+                    cargarRoles();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Error de conexión al crear el rol');
+            }
+        }
+
+        function editarRol(id) {
+            window.location.href = `editar_rol.html?id=${id}`;
+        }
+
+        async function eliminarRol(id, nombre) {
+            if (!confirm(`¿Estás seguro de eliminar el rol "${nombre}"?\n\nEsta acción no se puede deshacer.`)) return;
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/roles/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+
+                if (data.success) {
+                    alert('✅ Rol eliminado correctamente');
+                    cargarRoles();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Error de conexión al eliminar el rol');
+            }
+        }
+
+        function logout() {
+            if (confirm('¿Deseas cerrar sesión?')) {
+                localStorage.clear();
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+
+</body>
+
+</html>

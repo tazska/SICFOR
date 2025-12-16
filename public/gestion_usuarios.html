@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SICFOR - Gestión de Usuarios</title>
+  <link rel="stylesheet" href="/styles/style_gestion_usuarios.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-left">
+      <i class="material-icons menu-toggle">menu</i>
+      <span class="logo">SICFOR</span>
+    </div>
+    <div class="header-right">
+      <i class="material-icons notification-icon">notifications</i>
+      <span class="notification-badge" id="notification-count">0</span>
+      <div class="profile-icon" onclick="document.getElementById('profile-dropdown').classList.toggle('show')">
+        <i class="material-icons">account_circle</i>
+      </div>
+      <span class="profile-name" id="profile-name">Cargando...</span>
+      <div id="profile-dropdown" class="dropdown-content">
+        <a href="#" onclick="logout()">Logout</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="main-container">
+    <aside class="sidebar">
+      <nav>
+        <a href="dashboard.html"><i class="material-icons">dashboard</i> Panel de Control</a>
+        <a href="gestion_usuarios.html" style="background-color: #f0f0f0; font-weight: bold;">
+          <i class="material-icons">people</i> Gestión Usuarios
+        </a>
+        <a href="gestion_roles.html"><i class="material-icons">lock</i> Gestión Roles</a>
+        <a href="perfil.html"><i class="material-icons">person</i> Mi Perfil</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <div class="user-management-header">
+        <h2><i class="material-icons" style="font-size: 30px;">people</i> Gestión de Usuarios</h2>
+      </div>
+
+      <div class="card">
+        <div class="user-management-header">
+          <a href="agregar_usuario.html" class="btn primary">
+            <i class="material-icons">add</i> Agregar Nuevo Usuario
+          </a>
+
+          <div class="search-controls">
+            <div class="search-input">
+              <i class="material-icons" style="color: #95a5a6;">search</i>
+              <input type="text" id="searchUser" placeholder="Buscar usuario..." onkeyup="filtrarUsuarios()" />
+            </div>
+            <button class="btn secondary" onclick="cargarUsuarios()">
+              <i class="material-icons">refresh</i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="data-table" id="usuariosTable">
+            <thead>
+              <tr>
+                <th>Foto</th>
+                <th>Nombre / ID</th>
+                <th>Email / Teléfono</th>
+                <th>Rol / Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="5" style="text-align: center; padding: 20px; color: #999;">
+                  Cargando usuarios...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let todosLosUsuarios = []; // Guardar todos los usuarios para el filtro
+
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('🚀 Cargando página de gestión de usuarios...');
+
+      const usuario = JSON.parse(localStorage.getItem('usuario'));
+      if (usuario) {
+        document.getElementById('profile-name').textContent = usuario.nombre;
+      }
+      cargarUsuarios();
+    });
+
+    async function cargarUsuarios() {
+      console.log('📡 Cargando usuarios desde el servidor...');
+
+      try {
+        const res = await fetch('/api/usuarios');
+        const data = await res.json();
+
+        console.log('📦 Respuesta del servidor:', data);
+
+        if (data.success) {
+          todosLosUsuarios = data.usuarios; // Guardar para filtrado
+          mostrarUsuarios(data.usuarios);
+        } else {
+          console.error('❌ Error en la respuesta:', data.error);
+          mostrarError('Error al cargar usuarios');
+        }
+      } catch (err) {
+        console.error('❌ Error al cargar usuarios:', err);
+        mostrarError('Error de conexión con el servidor');
+      }
+    }
+
+    function mostrarUsuarios(usuarios) {
+      const tbody = document.querySelector('#usuariosTable tbody');
+      tbody.innerHTML = '';
+
+      if (usuarios.length === 0) {
+        tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 20px; color: #999;">
+            No hay usuarios registrados
+          </td>
+        </tr>
+      `;
+        return;
+      }
+
+      usuarios.forEach(u => {
+        console.log('👤 Renderizando usuario:', u.id, u.nombre);
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+        <td>
+          <div class="table-avatar" style="background-color: var(--color-secondary);">
+            <i class="material-icons">person</i>
+          </div>
+        </td>
+        <td>
+          <div class="user-info-cell" style="gap: 0; display: block;">
+            ${u.nombre || 'N/A'}
+            <span class="user-id id-tel">ID: ${u.id || 'N/A'}</span>
+          </div>
+        </td>
+        <td>
+          ${u.email || 'N/A'}
+          <span class="id-tel">Tel: ${u.telefono || 'N/A'}</span>
+        </td>
+        <td>
+          <span class="tag role-${u.rol}">${u.rol || 'N/A'}</span><br>
+          <span class="tag ${u.estado === 'active' ? 'active' : 'inactive'}" style="margin-top: 5px;">
+            ${u.estado === 'active' ? 'Activo' : 'Inactivo'}
+          </span>
+        </td>
+        <td class="action-icons">
+          <i class="material-icons edit" title="Editar" onclick="editarUsuario(${u.id})">edit</i>
+          <i class="material-icons delete" title="Eliminar" onclick="eliminarUsuario(${u.id})">delete</i>
+        </td>
+      `;
+        tbody.appendChild(tr);
+      });
+
+      console.log(`✅ ${usuarios.length} usuarios renderizados correctamente`);
+    }
+
+    function mostrarError(mensaje) {
+      const tbody = document.querySelector('#usuariosTable tbody');
+      tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align: center; padding: 20px; color: #d32f2f;">
+          ${mensaje}
+        </td>
+      </tr>
+    `;
+    }
+
+    async function eliminarUsuario(id) {
+      console.log('🗑️ Intentando eliminar usuario con id:', id);
+
+      if (!confirm(`¿Seguro que deseas eliminar el usuario con id ${id}?`)) {
+        console.log('❌ Eliminación cancelada por el usuario');
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/usuarios/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+
+        console.log('📨 Respuesta del servidor:', data);
+
+        if (data.success) {
+          alert('✅ Usuario eliminado correctamente');
+          cargarUsuarios(); // Recargar la lista
+        } else {
+          alert('❌ Error: ' + (data.error || 'No se pudo eliminar'));
+        }
+      } catch (err) {
+        console.error('❌ Error al eliminar:', err);
+        alert('❌ Error de conexión al eliminar usuario');
+      }
+    }
+
+    function editarUsuario(id) {
+      console.log('✏️ Editando usuario con id:', id);
+      window.location.href = `editar_usuario.html?id=${id}`;
+    }
+
+    function filtrarUsuarios() {
+      const searchTerm = document.getElementById('searchUser').value.toLowerCase();
+      console.log('🔍 Filtrando usuarios por:', searchTerm);
+
+      if (searchTerm === '') {
+        mostrarUsuarios(todosLosUsuarios);
+        return;
+      }
+
+      const usuariosFiltrados = todosLosUsuarios.filter(u => {
+        return (
+          (u.nombre && u.nombre.toLowerCase().includes(searchTerm)) ||
+          (u.email && u.email.toLowerCase().includes(searchTerm)) ||
+          (u.rol && u.rol.toLowerCase().includes(searchTerm))
+        );
+      });
+
+      console.log(`📋 ${usuariosFiltrados.length} usuarios encontrados`);
+      mostrarUsuarios(usuariosFiltrados);
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('usuario');
+      window.location.href = 'login.html';
+    }
+  </script>
+
+</body>
+
+</html>
