@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SICFOR - Panel Estudiante</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/style_dash_estu.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-left">
+            <i class="material-icons menu-toggle">menu</i>
+            <span class="logo">SICFOR</span>
+        </div>
+        <div class="header-right">
+            <div class="notification-icon">
+                <i class="material-icons">notifications</i>
+                <span class="notification-badge">5</span>
+            </div>
+            <div class="profile-area" onclick="document.getElementById('profile-dropdown').classList.toggle('show')">
+                <span class="profile-name" id="profile-name">María García</span>
+                <i class="material-icons profile-icon">account_circle</i>
+            </div>
+            <div id="profile-dropdown" class="dropdown-content">
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <div class="menu-title">MENÚ PRINCIPAL</div>
+            <nav>
+                <a href="dashboard_estudiante.html" class="active"><i class="material-icons">dashboard</i> Panel de
+                    Control</a>
+                <a href="perfil.html"><i class="material-icons">person</i> Mi Perfil</a>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <h2 style="font-size: 28px; font-weight: 300; margin-bottom: 5px;">Panel de Control - Estudiante</h2>
+            <p style="color: var(--color-text-muted); margin-bottom: 30px;">Bienvenido, aquí está tu progreso académico
+            </p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon icon-purple"><i class="material-icons">school</i></div>
+                    <div class="stat-info">
+                        <div class="value">5</div>
+                        <div class="label">Cursos Inscritos</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-green"><i class="material-icons">assessment</i></div>
+                    <div class="stat-info">
+                        <div class="value">8.7</div>
+                        <div class="label">Promedio General</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-orange"><i class="material-icons">assignment</i></div>
+                    <div class="stat-info">
+                        <div class="value">7</div>
+                        <div class="label">Tareas Pendientes</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue"><i class="material-icons">event_available</i></div>
+                    <div class="stat-info">
+                        <div class="value">94%</div>
+                        <div class="label">Asistencia</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="material-icons">assignment_turned_in</i> Tareas Pendientes</h3>
+                <ul class="task-list">
+                    <li class="task-item urgent">
+                        <div class="task-info">
+                            <div class="task-title">Proyecto Final - Desarrollo Web</div>
+                            <div class="task-meta">Instructor: Carlos Rodríguez | Vence: Hoy, 11:59 PM</div>
+                        </div>
+                        <span class="badge badge-danger">Urgente</span>
+                    </li>
+                    <li class="task-item">
+                        <div class="task-info">
+                            <div class="task-title">Taller Práctico - SQL Avanzado</div>
+                            <div class="task-meta">Instructor: Ana Martínez | Vence: 20 Dic 2025</div>
+                        </div>
+                        <span class="badge badge-warning">Pendiente</span>
+                    </li>
+                    <li class="task-item">
+                        <div class="task-info">
+                            <div class="task-title">Ejercicios JavaScript - Módulo 3</div>
+                            <div class="task-meta">Instructor: Carlos Rodríguez | Vence: 22 Dic 2025</div>
+                        </div>
+                        <span class="badge badge-info">Por hacer</span>
+                    </li>
+                    <li class="task-item completed">
+                        <div class="task-info">
+                            <div class="task-title">Quiz Semanal - HTML/CSS</div>
+                            <div class="task-meta">Instructor: Luis Fernández | Completado: 15 Dic 2025</div>
+                        </div>
+                        <span class="badge badge-success">Completado</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="material-icons">book</i> Mis Cursos</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Curso</th>
+                                <th>Instructor</th>
+                                <th>Progreso</th>
+                                <th>Calificación</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Desarrollo Web Avanzado</strong></td>
+                                <td>Carlos Rodríguez</td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 12px; color: var(--color-text-muted);">75%</span>
+                                        <div class="progress-bar" style="width: 100px;">
+                                            <div class="progress-fill" style="width: 75%;"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><strong style="color: var(--color-success);">9.2</strong></td>
+                                <td><span class="badge badge-success">En curso</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Bases de Datos II</strong></td>
+                                <td>Ana Martínez</td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 12px; color: var(--color-text-muted);">60%</span>
+                                        <div class="progress-bar" style="width: 100px;">
+                                            <div class="progress-fill" style="width: 60%;"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><strong style="color: var(--color-success);">8.8</strong></td>
+                                <td><span class="badge badge-success">En curso</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>JavaScript Avanzado</strong></td>
+                                <td>Carlos Rodríguez</td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 12px; color: var(--color-text-muted);">45%</span>
+                                        <div class="progress-bar" style="width: 100px;">
+                                            <div class="progress-fill" style="width: 45%;"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><strong style="color: var(--color-warning);">7.5</strong></td>
+                                <td><span class="badge badge-warning">Rezagado</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Diseño UI/UX</strong></td>
+                                <td>Patricia López</td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 12px; color: var(--color-text-muted);">90%</span>
+                                        <div class="progress-bar" style="width: 100px;">
+                                            <div class="progress-fill" style="width: 90%;"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><strong style="color: var(--color-success);">9.5</strong></td>
+                                <td><span class="badge badge-success">En curso</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Fundamentos de Python</strong></td>
+                                <td>Luis Fernández</td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 12px; color: var(--color-text-muted);">100%</span>
+                                        <div class="progress-bar" style="width: 100px;">
+                                            <div class="progress-fill" style="width: 100%;"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><strong style="color: var(--color-success);">9.0</strong></td>
+                                <td><span class="badge badge-info">Finalizado</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="material-icons">emoji_events</i> Logros y Certificados</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div
+                        style="padding: 20px; background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); border-radius: 8px; text-align: center; color: #856404;">
+                        <i class="material-icons" style="font-size: 40px;">workspace_premium</i>
+                        <div style="font-weight: bold; margin-top: 10px;">Certificado Python</div>
+                        <div style="font-size: 12px; margin-top: 5px;">Completado: Nov 2025</div>
+                    </div>
+                    <div
+                        style="padding: 20px; background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%); border-radius: 8px; text-align: center; color: #6c757d;">
+                        <i class="material-icons" style="font-size: 40px;">military_tech</i>
+                        <div style="font-weight: bold; margin-top: 10px;">Mejor Promedio</div>
+                        <div style="font-size: 12px; margin-top: 5px;">Trimestre Q4 2025</div>
+                    </div>
+                    <div
+                        style="padding: 20px; background: linear-gradient(135deg, #cd7f32 0%, #e9b77a 100%); border-radius: 8px; text-align: center; color: #7d5324;">
+                        <i class="material-icons" style="font-size: 40px;">stars</i>
+                        <div style="font-weight: bold; margin-top: 10px;">Participación Activa</div>
+                        <div style="font-size: 12px; margin-top: 5px;">100% Asistencia</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="material-icons">schedule</i> Próximas Clases</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Curso</th>
+                                <th>Fecha</th>
+                                <th>Hora</th>
+                                <th>Aula</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Desarrollo Web Avanzado</strong></td>
+                                <td>Lun, 20 Dic 2025</td>
+                                <td>14:00 - 16:00</td>
+                                <td>Aula 203</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Bases de Datos II</strong></td>
+                                <td>Mar, 21 Dic 2025</td>
+                                <td>10:00 - 12:00</td>
+                                <td>Lab 101</td>
+                            </tr>
+                            <tr>
+                                <td><strong>JavaScript Avanzado</strong></td>
+                                <td>Sáb, 25 Dic 2025</td>
+                                <td>14:00 - 18:00</td>
+                                <td>Aula 305</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('usuario');
+            window.location.href = 'login.html';
+        }
+
+        // Toggle sidebar en móvil
+        document.querySelector('.menu-toggle').addEventListener('click', function () {
+            document.querySelector('.sidebar').classList.toggle('show');
+        });
+
+        // Cerrar dropdown al hacer clic fuera
+        window.addEventListener('click', function (e) {
+            if (!e.target.matches('.profile-area') && !e.target.matches('.profile-name') && !e.target.matches('.profile-icon')) {
+                const dropdown = document.getElementById('profile-dropdown');
+                if (dropdown.classList.contains('show')) {
+                    dropdown.classList.remove('show');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

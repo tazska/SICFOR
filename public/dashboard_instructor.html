@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SICFOR - Panel Instructor</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="/styles/style_dash_inst.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-left">
+            <i class="material-icons menu-toggle">menu</i>
+            <span class="logo">SICFOR</span>
+        </div>
+        <div class="header-right">
+            <div class="notification-icon">
+                <i class="material-icons">notifications</i>
+                <span class="notification-badge">3</span>
+            </div>
+            <div class="profile-area" onclick="document.getElementById('profile-dropdown').classList.toggle('show')">
+                <span class="profile-name" id="profile-name">Carlos Rodríguez</span>
+                <i class="material-icons profile-icon">account_circle</i>
+            </div>
+            <div id="profile-dropdown" class="dropdown-content">
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <div class="menu-title">MENÚ PRINCIPAL</div>
+            <nav>
+                <a href="dashboard_instructor.html" class="active"><i class="material-icons">dashboard</i> Panel de Control</a>
+                <a href="perfil.html"><i class="material-icons">person</i> Mi Perfil</a>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <h2 style="font-size: 28px; font-weight: 300; margin-bottom: 5px;">Panel de Control - Instructor</h2>
+            <p style="color: var(--color-text-muted); margin-bottom: 30px;">Bienvenido, aquí está tu resumen académico</p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon icon-purple"><i class="material-icons">school</i></div>
+                    <div class="stat-info">
+                        <div class="value">8</div>
+                        <div class="label">Cursos Activos</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-green"><i class="material-icons">people</i></div>
+                    <div class="stat-info">
+                        <div class="value">156</div>
+                        <div class="label">Estudiantes Totales</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue"><i class="material-icons">assignment</i></div>
+                    <div class="stat-info">
+                        <div class="value">23</div>
+                        <div class="label">Tareas Pendientes</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon icon-orange"><i class="material-icons">rate_review</i></div>
+                    <div class="stat-info">
+                        <div class="value">12</div>
+                        <div class="label">Por Calificar</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="material-icons">assignment_late</i> Tareas Pendientes de Revisión</h3>
+                <ul class="task-list">
+                    <li class="task-item urgent">
+                        <div class="task-info">
+                            <div class="task-title">Proyecto Final - Desarrollo Web Avanzado</div>
+                            <div class="task-meta">Curso: Desarrollo Web | Fecha límite: Hoy, 11:59 PM | 15 entregas</div>
+                        </div>
+                        <span class="badge badge-warning">Urgente</span>
+                    </li>
+                    <li class="task-item">
+                        <div class="task-info">
+                            <div class="task-title">Examen Parcial - Bases de Datos</div>
+                            <div class="task-meta">Curso: Bases de Datos II | Fecha límite: 20 Dic 2025 | 28 entregas</div>
+                        </div>
+                        <span class="badge badge-info">Pendiente</span>
+                    </li>
+                    <li class="task-item">
+                        <div class="task-info">
+                            <div class="task-title">Taller Práctico - JavaScript</div>
+                            <div class="task-meta">Curso: Programación Web | Fecha límite: 22 Dic 2025 | 19 entregas</div>
+                        </div>
+                        <span class="badge badge-info">Pendiente</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3><i class="material-icons">book</i> Mis Cursos</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Curso</th>
+                                <th>Código</th>
+                                <th>Estudiantes</th>
+                                <th>Horario</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Desarrollo Web Avanzado</strong></td>
+                                <td>DWA-2025-01</td>
+                                <td>25</td>
+                                <td>Lun/Mié 14:00-16:00</td>
+                                <td><span class="badge badge-success">Activo</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Bases de Datos II</strong></td>
+                                <td>BD2-2025-02</td>
+                                <td>30</td>
+                                <td>Mar/Jue 10:00-12:00</td>
+                                <td><span class="badge badge-success">Activo</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Programación Web</strong></td>
+                                <td>PW-2025-03</td>
+                                <td>22</td>
+                                <td>Vie 08:00-12:00</td>
+                                <td><span class="badge badge-success">Activo</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>JavaScript Avanzado</strong></td>
+                                <td>JSA-2025-04</td>
+                                <td>18</td>
+                                <td>Sáb 14:00-18:00</td>
+                                <td><span class="badge badge-success">Activo</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Frameworks Frontend</strong></td>
+                                <td>FF-2025-05</td>
+                                <td>20</td>
+                                <td>Lun/Mié 16:00-18:00</td>
+                                <td><span class="badge badge-success">Activo</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3><i class="material-icons">trending_up</i> Estadísticas Recientes</h3>
+                <div class="stats-grid">
+                    <div style="padding: 20px; background-color: var(--color-bg); border-radius: 8px;">
+                        <div style="font-size: 14px; color: var(--color-text-muted); margin-bottom: 8px;">Promedio General</div>
+                        <div style="font-size: 32px; font-weight: bold; color: var(--color-success);">8.5</div>
+                    </div>
+                    <div style="padding: 20px; background-color: var(--color-bg); border-radius: 8px;">
+                        <div style="font-size: 14px; color: var(--color-text-muted); margin-bottom: 8px;">Asistencia Promedio</div>
+                        <div style="font-size: 32px; font-weight: bold; color: var(--color-info);">92%</div>
+                    </div>
+                    <div style="padding: 20px; background-color: var(--color-bg); border-radius: 8px;">
+                        <div style="font-size: 14px; color: var(--color-text-muted); margin-bottom: 8px;">Tareas Entregadas</div>
+                        <div style="font-size: 32px; font-weight: bold; color: var(--color-primary);">87%</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('usuario');
+            window.location.href = 'login.html';
+        }
+
+        // Toggle sidebar en móvil
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('show');
+        });
+
+        // Cerrar dropdown al hacer clic fuera
+        window.addEventListener('click', function(e) {
+            if (!e.target.matches('.profile-area') && !e.target.matches('.profile-name') && !e.target.matches('.profile-icon')) {
+                const dropdown = document.getElementById('profile-dropdown');
+                if (dropdown.classList.contains('show')) {
+                    dropdown.classList.remove('show');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

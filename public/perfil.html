@@ -29,15 +29,8 @@
   </header>
 
   <div class="main-container">
-    <aside class="sidebar">
-      <nav>
-        <a href="dashboard.html"><i class="material-icons">dashboard</i> Panel de Control</a>
-        <a href="gestion_usuarios.html"><i class="material-icons">people</i> Gestión Usuarios</a>
-        <a href="gestion_roles.html"><i class="material-icons">lock</i> Gestión Roles</a>
-        <a href="perfil.html" style="background-color: #f0f0f0; font-weight: bold;">
-          <i class="material-icons">person</i> Mi Perfil
-        </a>
-      </nav>
+    <aside class="sidebar" id="sidebar">
+      <!-- La barra de navegación se cargará dinámicamente según el rol -->
     </aside>
 
     <main class="content">
@@ -79,6 +72,51 @@
   </div>
 
   <script>
+    // Función para cargar la barra de navegación según el rol
+    function cargarNavegacion(rol) {
+      const sidebar = document.getElementById('sidebar');
+      
+      if (rol === 'instructor' || rol === 3) {
+        // Barra de navegación para Instructor
+        sidebar.innerHTML = `
+          <nav>
+            <a href="dashboard_instructor.html"><i class="material-icons">dashboard</i> Panel de Control</a>
+            <a href="perfil.html" class="active"><i class="material-icons">person</i> Mi Perfil</a>
+          </nav>
+        `;
+      } else if (rol === 'admin' || rol === 1) {
+        // Barra de navegación para Administrador
+        sidebar.innerHTML = `
+          <nav>
+            <a href="dashboard.html"><i class="material-icons">dashboard</i> Panel de Control</a>
+            <a href="gestion_usuarios.html"><i class="material-icons">people</i> Gestión Usuarios</a>
+            <a href="gestion_roles.html"><i class="material-icons">lock</i> Gestión Roles</a>
+            <a href="perfil.html" style="background-color: #f0f0f0; font-weight: bold;">
+              <i class="material-icons">person</i> Mi Perfil
+            </a>
+          </nav>
+        `;
+      } else if (rol === 'student' || rol === 2) {
+        // Barra de navegación para Estudiante
+        sidebar.innerHTML = `
+          <nav>
+            <a href="dashboard_estudiante.html"><i class="material-icons">dashboard</i> Panel de Control</a>
+            <a href="perfil.html" class="active"><i class="material-icons">person</i> Mi Perfil</a>
+          </nav>
+        `;
+      } else {
+        // Barra por defecto si no se reconoce el rol
+        sidebar.innerHTML = `
+          <nav>
+            <a href="dashboard.html"><i class="material-icons">dashboard</i> Panel de Control</a>
+            <a href="perfil.html" class="active"><i class="material-icons">person</i> Mi Perfil</a>
+          </nav>
+        `;
+      }
+      
+      console.log('✅ Barra de navegación cargada para rol:', rol);
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       console.log('🚀 Cargando perfil de usuario...');
 
@@ -91,6 +129,9 @@
       }
 
       console.log('✅ Usuario en sesión:', usuarioSesion);
+
+      // Cargar la barra de navegación según el rol
+      cargarNavegacion(usuarioSesion.rol || usuarioSesion.rol_id);
 
       // Mostrar nombre en el header
       document.getElementById('profile-name').textContent = usuarioSesion.nombre;
