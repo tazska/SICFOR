@@ -112,11 +112,7 @@
                             // Rol Estudiante
                             console.log('Estudiante detectado, redirigiendo a dashboard_estudiante.html');
                             window.location.href = 'dashboard_estudiante.html';
-                        } else {
-                            // Por defecto, al dashboard general
-                            console.log('Rol no reconocido, redirigiendo a dashboard.html');
-                            window.location.href = 'dashboard.html';
-                        }
+                        } 
                     } else {
                         throw new Error(data.error || 'Error en el login');
                     }

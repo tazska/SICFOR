@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="/styles/style_dash_estu.css">
 </head>
-
 <body>
     <header class="header">
         <div class="header-left">
@@ -21,7 +20,7 @@
                 <span class="notification-badge">5</span>
             </div>
             <div class="profile-area" onclick="document.getElementById('profile-dropdown').classList.toggle('show')">
-                <span class="profile-name" id="profile-name">María García</span>
+                <span class="profile-name" id="profile-name">Cargando...</span>
                 <i class="material-icons profile-icon">account_circle</i>
             </div>
             <div id="profile-dropdown" class="dropdown-content">
@@ -34,16 +33,14 @@
         <aside class="sidebar">
             <div class="menu-title">MENÚ PRINCIPAL</div>
             <nav>
-                <a href="dashboard_estudiante.html" class="active"><i class="material-icons">dashboard</i> Panel de
-                    Control</a>
+                <a href="dashboard_estudiante.html" class="active"><i class="material-icons">dashboard</i> Panel de Control</a>
                 <a href="perfil.html"><i class="material-icons">person</i> Mi Perfil</a>
             </nav>
         </aside>
 
         <main class="content">
             <h2 style="font-size: 28px; font-weight: 300; margin-bottom: 5px;">Panel de Control - Estudiante</h2>
-            <p style="color: var(--color-text-muted); margin-bottom: 30px;">Bienvenido, aquí está tu progreso académico
-            </p>
+            <p style="color: var(--color-text-muted); margin-bottom: 30px;">Bienvenido, aquí está tu progreso académico</p>
 
             <div class="stats-grid">
                 <div class="stat-card">
@@ -202,20 +199,17 @@
             <div class="card">
                 <h3><i class="material-icons">emoji_events</i> Logros y Certificados</h3>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <div
-                        style="padding: 20px; background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); border-radius: 8px; text-align: center; color: #856404;">
+                    <div style="padding: 20px; background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); border-radius: 8px; text-align: center; color: #856404;">
                         <i class="material-icons" style="font-size: 40px;">workspace_premium</i>
                         <div style="font-weight: bold; margin-top: 10px;">Certificado Python</div>
                         <div style="font-size: 12px; margin-top: 5px;">Completado: Nov 2025</div>
                     </div>
-                    <div
-                        style="padding: 20px; background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%); border-radius: 8px; text-align: center; color: #6c757d;">
+                    <div style="padding: 20px; background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%); border-radius: 8px; text-align: center; color: #6c757d;">
                         <i class="material-icons" style="font-size: 40px;">military_tech</i>
                         <div style="font-weight: bold; margin-top: 10px;">Mejor Promedio</div>
                         <div style="font-size: 12px; margin-top: 5px;">Trimestre Q4 2025</div>
                     </div>
-                    <div
-                        style="padding: 20px; background: linear-gradient(135deg, #cd7f32 0%, #e9b77a 100%); border-radius: 8px; text-align: center; color: #7d5324;">
+                    <div style="padding: 20px; background: linear-gradient(135deg, #cd7f32 0%, #e9b77a 100%); border-radius: 8px; text-align: center; color: #7d5324;">
                         <i class="material-icons" style="font-size: 40px;">stars</i>
                         <div style="font-weight: bold; margin-top: 10px;">Participación Activa</div>
                         <div style="font-size: 12px; margin-top: 5px;">100% Asistencia</div>
@@ -262,6 +256,21 @@
     </div>
 
     <script>
+        // Cargar datos del usuario desde localStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            const usuarioSesion = JSON.parse(localStorage.getItem('usuario'));
+            
+            if (!usuarioSesion) {
+                console.log('❌ No hay sesión activa, redirigiendo a login');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Mostrar nombre del usuario
+            document.getElementById('profile-name').textContent = usuarioSesion.nombre;
+            console.log('✅ Usuario cargado:', usuarioSesion.nombre);
+        });
+
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('usuario');
@@ -269,12 +278,12 @@
         }
 
         // Toggle sidebar en móvil
-        document.querySelector('.menu-toggle').addEventListener('click', function () {
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
             document.querySelector('.sidebar').classList.toggle('show');
         });
 
         // Cerrar dropdown al hacer clic fuera
-        window.addEventListener('click', function (e) {
+        window.addEventListener('click', function(e) {
             if (!e.target.matches('.profile-area') && !e.target.matches('.profile-name') && !e.target.matches('.profile-icon')) {
                 const dropdown = document.getElementById('profile-dropdown');
                 if (dropdown.classList.contains('show')) {

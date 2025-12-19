@@ -21,7 +21,7 @@
                 <span class="notification-badge">3</span>
             </div>
             <div class="profile-area" onclick="document.getElementById('profile-dropdown').classList.toggle('show')">
-                <span class="profile-name" id="profile-name">Carlos Rodríguez</span>
+                <span class="profile-name" id="profile-name">Cargando...</span>
                 <i class="material-icons profile-icon">account_circle</i>
             </div>
             <div id="profile-dropdown" class="dropdown-content">
@@ -176,6 +176,21 @@
     </div>
 
     <script>
+        // Cargar datos del usuario desde localStorage
+        document.addEventListener('DOMContentLoaded', () => {
+            const usuarioSesion = JSON.parse(localStorage.getItem('usuario'));
+            
+            if (!usuarioSesion) {
+                console.log('❌ No hay sesión activa, redirigiendo a login');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Mostrar nombre del usuario
+            document.getElementById('profile-name').textContent = usuarioSesion.nombre;
+            console.log('✅ Usuario cargado:', usuarioSesion.nombre);
+        });
+
         function logout() {
             localStorage.removeItem('token');
             localStorage.removeItem('usuario');

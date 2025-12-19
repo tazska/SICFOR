@@ -29,15 +29,8 @@
   </header>
 
   <div class="main-container">
-    <aside class="sidebar">
-      <nav>
-        <a href="dashboard.html"><i class="material-icons">dashboard</i> Panel de Control</a>
-        <a href="gestion_usuarios.html" style="background-color: #f0f0f0; font-weight: bold;">
-          <i class="material-icons">people</i> Gestión Usuarios
-        </a>
-        <a href="gestion_roles.html"><i class="material-icons">lock</i> Gestión Roles</a>
-        <a href="perfil.html"><i class="material-icons">person</i> Mi Perfil</a>
-      </nav>
+    <aside class="sidebar" id="sidebar">
+      <!-- La barra de navegación se cargará dinámicamente según el rol -->
     </aside>
 
     <main class="content">
@@ -94,7 +87,7 @@
               </select>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" id="role-group">
               <label>Rol:</label>
               <div class="role-selection-group">
                 <label><input type="radio" name="role" value="admin"> Administrador</label>
@@ -106,32 +99,95 @@
 
           <div style="text-align: right; margin-top: 20px;">
             <button type="submit" class="btn primary"><i class="material-icons">save</i> Guardar Cambios</button>
-            <a href="gestion_usuarios.html" class="btn secondary" style="margin-left: 10px;">Cancelar</a>
+            <button type="button" id="cancelBtn" class="btn secondary" style="margin-left: 10px;">Cancelar</button>
           </div>
         </form>
       </div>
     </main>
   </div>
  <script>
+// Variable global para saber desde dónde se accedió
+let origenPagina = 'gestion'; // Por defecto
+
+// Función para cargar la barra de navegación según el rol
+function cargarNavegacion(rol, esPerfil) {
+  const sidebar = document.getElementById('sidebar');
+  
+  if (esPerfil) {
+    // Si viene desde perfil, mostrar la barra según el rol del usuario
+    if (rol === 'instructor' || rol === 3) {
+      sidebar.innerHTML = `
+        <nav>
+          <a href="dashboard_instructor.html"><i class="material-icons">dashboard</i> Panel de Control</a>
+          <a href="perfil.html" class="active"><i class="material-icons">person</i> Mi Perfil</a>
+        </nav>
+      `;
+    } else if (rol === 'student' || rol === 2) {
+      sidebar.innerHTML = `
+        <nav>
+          <a href="dashboard_estudiante.html"><i class="material-icons">dashboard</i> Panel de Control</a>
+          <a href="perfil.html" class="active"><i class="material-icons">person</i> Mi Perfil</a>
+        </nav>
+      `;
+    } else {
+      sidebar.innerHTML = `
+        <nav>
+          <a href="dashboard.html"><i class="material-icons">dashboard</i> Panel de Control</a>
+          <a href="gestion_usuarios.html"><i class="material-icons">people</i> Gestión Usuarios</a>
+          <a href="gestion_roles.html"><i class="material-icons">lock</i> Gestión Roles</a>
+          <a href="perfil.html" style="background-color: #f0f0f0; font-weight: bold;">
+            <i class="material-icons">person</i> Mi Perfil
+          </a>
+        </nav>
+      `;
+    }
+  } else {
+    // Si viene desde gestión, mostrar la barra de admin
+    sidebar.innerHTML = `
+      <nav>
+        <a href="dashboard.html"><i class="material-icons">dashboard</i> Panel de Control</a>
+        <a href="gestion_usuarios.html" style="background-color: #f0f0f0; font-weight: bold;">
+          <i class="material-icons">people</i> Gestión Usuarios
+        </a>
+        <a href="gestion_roles.html"><i class="material-icons">lock</i> Gestión Roles</a>
+        <a href="perfil.html"><i class="material-icons">person</i> Mi Perfil</a>
+      </nav>
+    `;
+  }
+  
+  console.log('✅ Barra de navegación cargada para rol:', rol, '| Desde perfil:', esPerfil);
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   console.log('🚀 Iniciando edición de usuario...');
 
-  const usuario = JSON.parse(localStorage.getItem('usuario'));
-  if (usuario) {
-    document.getElementById('profile-name').textContent = usuario.nombre;
+  const usuarioSesion = JSON.parse(localStorage.getItem('usuario'));
+  if (!usuarioSesion) {
+    window.location.href = 'login.html';
+    return;
   }
 
-  // Obtener id desde la URL
+  document.getElementById('profile-name').textContent = usuarioSesion.nombre;
+
+  // Obtener parámetros desde la URL
   const params = new URLSearchParams(window.location.search);
   const userId = params.get('id');
+  const fromPerfil = params.get('from') === 'perfil'; // Detectar si viene desde perfil
 
   console.log('📋 ID desde URL:', userId);
+  console.log('📍 Origen:', fromPerfil ? 'Perfil' : 'Gestión');
+
+  // Guardar el origen
+  origenPagina = fromPerfil ? 'perfil' : 'gestion';
 
   if (!userId) {
     alert('❌ No se especificó usuario');
-    window.location.href = 'gestion_usuarios.html';
+    window.location.href = fromPerfil ? 'perfil.html' : 'gestion_usuarios.html';
     return;
   }
+
+  // Cargar la barra de navegación
+  cargarNavegacion(usuarioSesion.rol || usuarioSesion.rol_id, fromPerfil);
 
   // Cargar datos del usuario
   try {
@@ -161,21 +217,47 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.getElementById('status').value = u.estado || 'active';
 
       // Marcar el rol correcto
+      console.log('🔍 Rol del usuario:', u.rol);
       const rolInput = document.querySelector(`input[name="role"][value="${u.rol}"]`);
-      if (rolInput) rolInput.checked = true;
+      if (rolInput) {
+        rolInput.checked = true;
+        console.log('✅ Rol marcado:', u.rol);
+      } else {
+        console.warn('⚠️ No se encontró input para el rol:', u.rol);
+      }
+      
+      // Si viene desde perfil y NO es admin, deshabilitar el cambio de rol
+      if (fromPerfil && u.rol !== 'admin') {
+        document.getElementById('role-group').style.opacity = '0.6';
+        document.getElementById('role-group').style.pointerEvents = 'none';
+        const roleInputs = document.querySelectorAll('input[name="role"]');
+        roleInputs.forEach(input => input.disabled = true);
+        console.log('🔒 Cambio de rol deshabilitado (edición desde perfil)');
+      }
     } else {
       alert('❌ Error: ' + (data.error || 'Usuario no encontrado'));
-      window.location.href = 'gestion_usuarios.html';
+      window.location.href = fromPerfil ? 'perfil.html' : 'gestion_usuarios.html';
     }
   } catch (err) {
     console.error('❌ Error al cargar usuario:', err);
     alert('❌ Error al cargar los datos del usuario');
-    window.location.href = 'gestion_usuarios.html';
+    window.location.href = fromPerfil ? 'perfil.html' : 'gestion_usuarios.html';
   }
+
+  // Botón Cancelar
+  document.getElementById('cancelBtn').addEventListener('click', () => {
+    if (origenPagina === 'perfil') {
+      window.location.href = 'perfil.html';
+    } else {
+      window.location.href = 'gestion_usuarios.html';
+    }
+  });
 
   // Guardar cambios
   document.getElementById('editUserForm').addEventListener('submit', async e => {
     e.preventDefault();
+
+    console.log('📝 Iniciando guardado...');
 
     const selectedRole = document.querySelector('input[name="role"]:checked');
     if (!selectedRole) {
@@ -196,6 +278,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     console.log('💾 Guardando cambios para usuario con id:', userId);
     console.log('📦 Datos a actualizar:', updatedUser);
+    console.log('🔍 Rol seleccionado:', selectedRole.value);
 
     try {
       const res = await fetch(`/api/usuarios/${userId}`, {
@@ -203,18 +286,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedUser)
       });
+      
+      console.log('📡 Status de respuesta:', res.status);
+      
       const result = await res.json();
       console.log('📨 Respuesta del servidor:', result);
 
       if (result.success) {
         alert('✅ Usuario actualizado correctamente');
-        window.location.href = 'gestion_usuarios.html';
+        
+        // Redirigir según el origen
+        if (origenPagina === 'perfil') {
+          // Si se editó desde perfil y es el mismo usuario, actualizar localStorage
+          if (userId == usuarioSesion.id) {
+            const usuarioActualizado = { 
+              ...usuarioSesion, 
+              nombre: updatedUser.nombre,
+              email: updatedUser.email,
+              rol: updatedUser.rol,
+              telefono: updatedUser.telefono,
+              departamento: updatedUser.departamento,
+              ubicacion: updatedUser.ubicacion,
+              estado: updatedUser.estado,
+              documento_identidad: updatedUser.documento_identidad
+            };
+            localStorage.setItem('usuario', JSON.stringify(usuarioActualizado));
+            console.log('✅ localStorage actualizado:', usuarioActualizado);
+          }
+          window.location.href = 'perfil.html';
+        } else {
+          window.location.href = 'gestion_usuarios.html';
+        }
       } else {
         alert('❌ Error: ' + (result.error || 'No se pudo actualizar'));
       }
     } catch (err) {
       console.error('❌ Error al actualizar usuario:', err);
-      alert('❌ Error al guardar los cambios');
+      alert('❌ Error al guardar los cambios: ' + err.message);
     }
   });
 });

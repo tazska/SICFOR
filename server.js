@@ -430,6 +430,163 @@ app.get('/api/actividad/:id', async (req, res) => {
     }
 });
 
+// Ruta para cambiar contraseña (usuario autenticado)
+// Agregar esta ruta en tu server.js
+
+
+// Ruta para cambiar contraseña (usuario autenticado)
+app.post('/api/cambiar-password', async (req, res) => {
+    console.log('🔐 === INICIO CAMBIO DE CONTRASEÑA ===');
+    console.log('📦 Body recibido:', {
+        usuario_id: req.body.usuario_id,
+        tiene_password_actual: !!req.body.password_actual,
+        tiene_password_nueva: !!req.body.password_nueva
+    });
+
+    const { usuario_id, password_actual, password_nueva } = req.body;
+
+    // Validaciones básicas
+    if (!usuario_id || !password_actual || !password_nueva) {
+        console.log('❌ Faltan campos requeridos');
+        return res.status(400).json({
+            success: false,
+            error: 'Todos los campos son requeridos'
+        });
+    }
+
+    // Validar requisitos de la nueva contraseña
+    if (password_nueva.length < 8) {
+        console.log('❌ Contraseña muy corta');
+        return res.status(400).json({
+            success: false,
+            error: 'La contraseña debe tener al menos 8 caracteres'
+        });
+    }
+
+    if (!/[A-Z]/.test(password_nueva)) {
+        console.log('❌ Falta mayúscula');
+        return res.status(400).json({
+            success: false,
+            error: 'La contraseña debe contener al menos una letra mayúscula'
+        });
+    }
+
+    if (!/[a-z]/.test(password_nueva)) {
+        console.log('❌ Falta minúscula');
+        return res.status(400).json({
+            success: false,
+            error: 'La contraseña debe contener al menos una letra minúscula'
+        });
+    }
+
+    if (!/[0-9]/.test(password_nueva)) {
+        console.log('❌ Falta número');
+        return res.status(400).json({
+            success: false,
+            error: 'La contraseña debe contener al menos un número'
+        });
+    }
+
+    try {
+        console.log('🔍 Buscando usuario ID:', usuario_id);
+
+        // Obtener el usuario de la base de datos
+        const [usuarios] = await pool.query(
+            'SELECT id, nombre, email, contraseña FROM usuarios WHERE id = ?',
+            [usuario_id]
+        );
+
+        if (usuarios.length === 0) {
+            console.log('❌ Usuario no encontrado en BD');
+            return res.status(404).json({
+                success: false,
+                error: 'Usuario no encontrado'
+            });
+        }
+
+        const usuario = usuarios[0];
+        console.log('✅ Usuario encontrado:', { id: usuario.id, email: usuario.email });
+
+        // Verificar que la contraseña actual sea correcta
+        console.log('🔐 Verificando contraseña actual...');
+        const passwordValida = await bcrypt.compare(password_actual, usuario.contraseña);
+
+        if (!passwordValida) {
+            console.log('❌ Contraseña actual incorrecta');
+            return res.status(401).json({
+                success: false,
+                error: 'La contraseña actual es incorrecta'
+            });
+        }
+
+        console.log('✅ Contraseña actual verificada');
+
+        // Verificar que la nueva contraseña sea diferente a la actual
+        const mismPassword = await bcrypt.compare(password_nueva, usuario.contraseña);
+        if (mismPassword) {
+            console.log('❌ Nueva contraseña igual a la actual');
+            return res.status(400).json({
+                success: false,
+                error: 'La nueva contraseña debe ser diferente a la actual'
+            });
+        }
+
+        console.log('🔒 Encriptando nueva contraseña...');
+        // Encriptar la nueva contraseña
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password_nueva, saltRounds);
+        console.log('✅ Nueva contraseña encriptada');
+
+        // Actualizar la contraseña en la base de datos
+        console.log('💾 Actualizando contraseña en BD...');
+        const [resultado] = await pool.query(
+            'UPDATE usuarios SET contraseña = ?, actualizado_en = NOW() WHERE id = ?',
+            [hashedPassword, usuario_id]
+        );
+
+        console.log('✅ Resultado update:', { affectedRows: resultado.affectedRows });
+
+        if (resultado.affectedRows === 0) {
+            console.log('⚠️ No se actualizó ninguna fila');
+            return res.status(500).json({
+                success: false,
+                error: 'No se pudo actualizar la contraseña'
+            });
+        }
+
+        console.log('✅ Contraseña actualizada exitosamente para usuario:', usuario_id);
+
+        // Registrar la actividad
+        try {
+            await pool.query(
+                'INSERT INTO actividad_usuarios (usuario_id, descripcion) VALUES (?, ?)',
+                [usuario_id, 'Cambió su contraseña']
+            );
+            console.log('✅ Actividad registrada');
+        } catch (actError) {
+            console.log('⚠️ No se pudo registrar actividad:', actError.message);
+        }
+
+        console.log('🎉 === CAMBIO DE CONTRASEÑA EXITOSO ===');
+        return res.status(200).json({
+            success: true,
+            message: 'Contraseña actualizada correctamente'
+        });
+
+    } catch (error) {
+        console.error('❌ === ERROR EN CAMBIO DE CONTRASEÑA ===');
+        console.error('Tipo de error:', error.name);
+        console.error('Mensaje:', error.message);
+        console.error('Stack:', error.stack);
+
+        return res.status(500).json({
+            success: false,
+            error: 'Error al cambiar la contraseña',
+            detalle: error.message
+        });
+    }
+});
+
 // =======================
 // ROLES API
 // =======================
